@@ -33,7 +33,7 @@ export default function Features() {
   ];
 
   return (
-    <section className="py-20 px-6 bg-[#0a0a0f] relative">
+    <section id="features" className="py-20 px-6 bg-[#0a0a0f] relative">
       <div className="max-w-7xl mx-auto">
         {/* Section Title */}
         <div className="text-center mb-16">

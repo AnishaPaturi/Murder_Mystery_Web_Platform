@@ -1,14 +1,18 @@
+import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import EvidenceBoard from "./components/EvidenceBoard";
 import SuspectProfiles from "./components/SuspectProfiles";
 import Features from "./components/Features";
+import ProgressTracker from "./components/ProgressTracker";
 
 export default function App() {
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
+      <Navbar />
       <Hero />
       <EvidenceBoard />
       <SuspectProfiles />
+      <ProgressTracker />
       <Features />
 
       {/* Footer */}

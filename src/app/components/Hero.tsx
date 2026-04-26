@@ -1,6 +1,16 @@
 export default function Hero() {
+  const scrollToEvidence = () => {
+    const element = document.getElementById("evidence");
+    element?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const startInvestigation = () => {
+    // Navigate to first phase/challenge
+    scrollToEvidence();
+  };
+
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Crime Scene Tape Background */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-10 left-0 w-full h-12 bg-yellow-400 transform -rotate-3 flex items-center justify-center">
@@ -57,10 +67,16 @@ export default function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <button className="px-8 py-4 bg-[#8b0000] text-[#e8e6e3] hover:bg-[#a00000] transition-all duration-300 border-2 border-[#8b0000] hover:border-[#e8e6e3] shadow-lg hover:shadow-[#8b0000]/50 transform hover:-translate-y-1 uppercase tracking-wider">
-            🔓 Open Case File
+          <button
+            onClick={startInvestigation}
+            className="px-8 py-4 bg-[#8b0000] text-[#e8e6e3] hover:bg-[#a00000] transition-all duration-300 border-2 border-[#8b0000] hover:border-[#e8e6e3] shadow-lg hover:shadow-[#8b0000]/50 transform hover:-translate-y-1 uppercase tracking-wider"
+          >
+            🔓 Start Investigation
           </button>
-          <button className="px-8 py-4 bg-transparent text-[#e8e6e3] border-2 border-[#8b0000] hover:bg-[#8b0000]/20 transition-all duration-300 uppercase tracking-wider">
+          <button
+            onClick={scrollToEvidence}
+            className="px-8 py-4 bg-transparent text-[#e8e6e3] border-2 border-[#8b0000] hover:bg-[#8b0000]/20 transition-all duration-300 uppercase tracking-wider"
+          >
             📋 View Evidence
           </button>
         </div>
