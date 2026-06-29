@@ -57,7 +57,7 @@ export default function Features() {
         {/* Section Title */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl text-[#e8e6e3] mb-4 font-serif italic">
-            Why CodeDetective?
+            Why The Bytes of Wrath?
           </h2>
           <div className="w-32 h-1 bg-[#8b0000] mx-auto mb-6"></div>
           <p className="text-[#9ca3af] text-lg max-w-2xl mx-auto">

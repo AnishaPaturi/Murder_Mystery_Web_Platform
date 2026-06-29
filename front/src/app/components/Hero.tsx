@@ -41,13 +41,13 @@ export default function Hero() {
 
         {/* Main Title */}
         <h1 className="mb-6 tracking-tight">
-          <span className="block text-6xl md:text-8xl text-[#e8e6e3] font-serif italic">CodeDetective</span>
+          <span className="block text-6xl md:text-8xl text-[#e8e6e3] font-serif italic">The Bytes of Wrath</span>
           <span className="block text-2xl md:text-4xl text-[#8b0000] mt-4 font-mono">CLASSIFIED INVESTIGATION</span>
         </h1>
 
         {/* Tagline */}
         <p className="text-xl md:text-2xl text-[#9ca3af] max-w-3xl mx-auto mb-8 leading-relaxed">
-          A high-profile murder at TechCorp Industries. The evidence is digital.
+          A high-profile murder at ByteCorp. The evidence is digital.
           <span className="text-[#8b0000]"> Only you can crack the code.</span>
         </p>
 

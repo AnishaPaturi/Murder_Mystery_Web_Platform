@@ -39,7 +39,7 @@ export default function App() {
         <footer className="bg-[#16161d] border-t border-[#8b0000]/50 py-12 px-6">
           <div className="max-w-7xl mx-auto text-center">
             <div className="mb-6">
-              <h3 className="text-2xl text-[#e8e6e3] font-serif italic mb-2">CodeDetective</h3>
+              <h3 className="text-2xl text-[#e8e6e3] font-serif italic mb-2">The Bytes of Wrath</h3>
               <p className="text-[#9ca3af] font-mono text-sm">CASE #2026-042 | CLASSIFIED</p>
             </div>
             <div className="flex justify-center gap-8 mb-6 text-[#9ca3af]">
@@ -58,7 +58,7 @@ export default function App() {
             </div>
             <div className="border-t border-[#8b0000]/30 pt-6">
               <p className="text-[#9ca3af] text-sm">
-                © 2026 CodeDetective. All rights reserved. | Learn MERN by solving mysteries.
+                © 2026 The Bytes of Wrath. All rights reserved. | Learn MERN by solving mysteries.
               </p>
             </div>
           </div>

@@ -23,7 +23,7 @@ export default function Navbar() {
               <span className="text-xl">🔍</span>
             </div>
             <div>
-              <h1 className="text-xl text-[#e8e6e3] font-serif italic">CodeDetective</h1>
+              <h1 className="text-xl text-[#e8e6e3] font-serif italic">The Bytes of Wrath</h1>
               <p className="text-xs text-[#8b0000] font-mono">CASE #2026-042</p>
             </div>
           </Link>
