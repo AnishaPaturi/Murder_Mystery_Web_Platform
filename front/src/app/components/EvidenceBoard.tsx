@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useAuth, API_URL } from "../context/AuthContext";
 
 export default function EvidenceBoard() {
+  const { token, updateLocalUserStats } = useAuth();
   const [unlockedEvidence, setUnlockedEvidence] = useState<number[]>([1]);
   const [selectedEvidence, setSelectedEvidence] = useState<number | null>(null);
 
@@ -73,9 +75,59 @@ export default function EvidenceBoard() {
     }
   };
 
-  const handleUnlock = (id: number) => {
+  const handleUnlock = async (id: number, title: string) => {
     if (id > 1 && unlockedEvidence.includes(id - 1)) {
       setUnlockedEvidence([...unlockedEvidence, id]);
+
+      if (token) {
+        try {
+          const res = await fetch(`${API_URL}/user/activity`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              type: "evidence_found",
+              description: `Unlocked Investigation Phase: ${title}`,
+              xp: 15,
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.user) {
+            updateLocalUserStats(data.user);
+          }
+        } catch (err) {
+          console.error("Error logging unlock activity:", err);
+        }
+      }
+    }
+  };
+
+  const handleStartPhase = async (id: number, title: string) => {
+    setSelectedEvidence(null);
+
+    if (token) {
+      try {
+        const res = await fetch(`${API_URL}/user/activity`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            type: "case_solved",
+            description: `Solved Case Challenge in Phase: ${title}`,
+            xp: 50,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.user) {
+          updateLocalUserStats(data.user);
+        }
+      } catch (err) {
+        console.error("Error logging case solve activity:", err);
+      }
     }
   };
 
@@ -124,7 +176,7 @@ export default function EvidenceBoard() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleUnlock(item.id);
+                            handleUnlock(item.id, item.title);
                           }}
                           className="text-sm text-[#8b0000] border border-[#8b0000] px-3 py-1 hover:bg-[#8b0000] hover:text-[#e8e6e3] transition-all"
                         >
@@ -204,7 +256,10 @@ export default function EvidenceBoard() {
                 </div>
               </div>
 
-              <button className="w-full py-4 bg-[#8b0000] text-[#e8e6e3] hover:bg-[#a00000] transition-all duration-300 uppercase tracking-wider">
+              <button 
+                onClick={() => handleStartPhase(selectedItem.id, selectedItem.title)}
+                className="w-full py-4 bg-[#8b0000] text-[#e8e6e3] hover:bg-[#a00000] transition-all duration-300 uppercase tracking-wider"
+              >
                 Start Phase {selectedItem.id}
               </button>
             </div>

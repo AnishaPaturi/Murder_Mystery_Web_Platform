@@ -1,7 +1,10 @@
+import { useNavigate, Link } from "react-router-dom";
+
 export default function Hero() {
+  const navigate = useNavigate();
+
   const scrollToEvidence = () => {
-    const element = document.getElementById("evidence");
-    element?.scrollIntoView({ behavior: "smooth" });
+    navigate("/evidence", { replace: false });
   };
 
   const startInvestigation = () => {

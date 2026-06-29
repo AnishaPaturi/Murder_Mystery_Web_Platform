@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useAuth, API_URL } from "../context/AuthContext";
 
 export default function SuspectProfiles() {
+  const { token, updateLocalUserStats } = useAuth();
   const [selectedSuspect, setSelectedSuspect] = useState<number | null>(null);
 
   const suspects = [
@@ -49,6 +51,58 @@ export default function SuspectProfiles() {
       background: "MBA from prestigious university. Recently went through expensive divorce."
     }
   ];
+
+  const handleInterrogateClick = async (suspect: typeof suspects[0]) => {
+    setSelectedSuspect(suspect.id);
+
+    if (token) {
+      try {
+        const res = await fetch(`${API_URL}/user/activity`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            type: "suspect_interviewed",
+            description: `Interrogated Suspect: ${suspect.name} (${suspect.role})`,
+            xp: 20,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.user) {
+          updateLocalUserStats(data.user);
+        }
+      } catch (err) {
+        console.error("Error logging suspect interrogation:", err);
+      }
+    }
+  };
+
+  const handleQuestionFurther = async (suspect: typeof suspects[0]) => {
+    if (token) {
+      try {
+        const res = await fetch(`${API_URL}/user/activity`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            type: "suspect_interviewed",
+            description: `Questioned Further: ${suspect.name} (${suspect.role})`,
+            xp: 15,
+          }),
+        });
+        const data = await res.json();
+        if (res.ok && data.user) {
+          updateLocalUserStats(data.user);
+        }
+      } catch (err) {
+        console.error("Error logging further questioning:", err);
+      }
+    }
+  };
 
   const selectedProfile = suspects.find(s => s.id === selectedSuspect);
 
@@ -114,7 +168,7 @@ export default function SuspectProfiles() {
 
               {/* Interrogate Button */}
               <button
-                onClick={() => setSelectedSuspect(suspect.id)}
+                onClick={() => handleInterrogateClick(suspect)}
                 className="w-full mt-4 py-2 border border-[#8b0000] text-[#8b0000] hover:bg-[#8b0000] hover:text-[#e8e6e3] transition-all duration-300 text-sm font-mono uppercase tracking-wider"
               >
                 Interrogate
@@ -184,10 +238,16 @@ export default function SuspectProfiles() {
 
               {/* Actions */}
               <div className="flex gap-4">
-                <button className="flex-1 py-3 bg-[#8b0000] text-[#e8e6e3] hover:bg-[#a00000] transition-all duration-300 uppercase tracking-wider">
+                <button 
+                  onClick={() => handleQuestionFurther(selectedProfile)}
+                  className="flex-1 py-3 bg-[#8b0000] text-[#e8e6e3] hover:bg-[#a00000] transition-all duration-300 uppercase tracking-wider"
+                >
                   Question Further
                 </button>
-                <button className="flex-1 py-3 border-2 border-[#8b0000] text-[#8b0000] hover:bg-[#8b0000] hover:text-[#e8e6e3] transition-all duration-300 uppercase tracking-wider">
+                <button 
+                  onClick={() => setSelectedSuspect(null)}
+                  className="flex-1 py-3 border-2 border-[#8b0000] text-[#8b0000] hover:bg-[#8b0000] hover:text-[#e8e6e3] transition-all duration-300 uppercase tracking-wider"
+                >
                   Review Evidence
                 </button>
               </div>

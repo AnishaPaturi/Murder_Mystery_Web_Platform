@@ -1,98 +1,76 @@
-# Murder Mystery Web Platform
+# Murder Mystery Web Platform (MERN Stack)
 
-An interactive web application for solving murder mysteries. Explore crime scenes, examine evidence, interview suspects, and deduce the culprit.
+An interactive web application designed to teach the complete MERN stack (MongoDB, Express, React, Node.js) through an immersive murder mystery investigation: **"The Bytes of Wrath"**. Detectives learn web development by reconstructing corrupted crime scene logs, decrypting communications, building evidence trackers, and writing database queries to unmask the killer.
 
-## Features
+---
 
-- **Interactive Evidence Board**: Drag and drop evidence to connect clues
-- **Suspect Profiles**: Detailed backgrounds and alibis for each suspect
-- **Case Files**: Document and organize your investigation findings
-- **Responsive Design**: Works on desktop and mobile devices
-- **Modern UI**: Built with shadcn/ui and Tailwind CSS
+## 📂 Project Structure
 
-## Tech Stack
+The project has been refactored into a full-stack architecture:
 
-- **Framework**: React 18 with Vite
-- **Styling**: Tailwind CSS
-- **UI Components**: shadcn/ui (Radix UI primitives)
-- **State Management**: React Hook Form
-- **Animations**: Motion (Framer Motion)
-- **Icons**: Lucide React
-- **Charts**: Recharts
-- **Date Handling**: date-fns
-- **Drag & Drop**: React DnD
+- **[`/front`](file:///C:/Users/anish/OneDrive/College/Projects/Murder_Mystery_Web_Platform/front)**: Frontend React client built with Vite, React Router, Motion (animations), and Tailwind CSS.
+- **[`/back`](file:///C:/Users/anish/OneDrive/College/Projects/Murder_Mystery_Web_Platform/back)**: Backend Express API built with Node.js, JWT Authentication, and Mongoose (MongoDB).
 
-## Getting Started
+---
+
+## 🕵️‍♂️ The Story: "The Bytes of Wrath"
+
+Arthur Pendelton, Chief Systems Architect at ByteCorp, is found dead inside the mainframe server room, locked inside while a remote script initiated a CPU thermal overload.
+
+To solve the crime, you must enrole in detective training and master each development tier:
+1. **HTML & CSS**: Format the victim's corrupted autopsy report and map the physical office desk layouts.
+2. **JavaScript**: Code string decrypters for suspect chat logs and search arrays for card swipes.
+3. **React.js**: Construct the reactive clue board dashboard.
+4. **Node & Express**: Set up backend Express routes and custom token-based API authentication middleware.
+5. **MongoDB**: Define schemas and build complex queries to match server crash timestamps.
+
+---
+
+## ⚙️ Features
+
+- **Case Dossier (`/story`)**: Classifed files cabinet detailing Arthur Pendelton's victim card, alibi lists, threat levels, and detective training syllabus.
+- **Interactive Evidence Board (`/evidence`)**: Unlock phases and solve challenges (saves status and XP metrics to the database).
+- **Suspect Profiles (`/suspects`)**: Interrogate prime suspects to record forensic timelines.
+- **LeetCode-Style Heatmap (`/profile`)**: Dynamic SVG activity matrix displaying detective actions over the past 365 days with interactive hover tooltips.
+- **Detective Logs (`/profile`)**: Chronological audit feed displaying action types (🔍 solves, 🏆 badges, 🗣️ interviews), description, and XP bonuses.
+- **Enlistment Hub (`/login`, `/signup`)**: Secure user token auth, hashing credentials using bcrypt.
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- pnpm (recommended) or npm/yarn
+- **Node.js**: Version 18 or higher.
+- **MongoDB**: Running locally at `mongodb://127.0.0.1:27017/murder_mystery` (or custom Atlas URI configured in `.env`).
 
-### Installation
+### Quick Start
 
-```bash
-# Install dependencies
-pnpm install
+1. **Install all dependencies** (for root, frontend, and backend packages):
+   ```bash
+   npm run install:all
+   ```
 
-# or with npm
-npm install
+2. **Run both development servers concurrently**:
+   ```bash
+   npm run dev
+   ```
 
-# or with yarn
-yarn
+* The **Frontend** will be running at: `http://localhost:5173`
+* The **Backend API** will be running at: `http://localhost:5000`
+
+---
+
+## 🔒 Configuration
+
+Environment settings are configured inside **[`back/.env`](file:///C:/Users/anish/OneDrive/College/Projects/Murder_Mystery_Web_Platform/back/.env)**:
+```env
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/murder_mystery
+JWT_SECRET=super_secret_detective_key_2026
 ```
 
-### Development
+---
 
-```bash
-# Start development server
-pnpm dev
-
-# or with npm
-npm run dev
-
-# or with yarn
-yarn dev
-```
-
-The application will be available at http://localhost:5173
-
-### Production Build
-
-```bash
-# Build for production
-pnpm build
-
-# Preview production build
-pnpm preview
-```
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── App.tsx                 # Main application component
-│   └── components/
-│       ├── EvidenceBoard.tsx   # Interactive evidence board
-│       ├── SuspectProfiles.tsx # Suspect information display
-│       ├── Features.tsx        # Key features showcase
-│       ├── Hero.tsx            # Landing page hero section
-│       └── ui/                 # Reusable UI components (shadcn/ui)
-├── styles/                     # Global styles and theme
-└── main.tsx                    # Application entry point
-```
-
-## Available Scripts
-
-- `pnpm dev` - Start development server
-- `pnpm build` - Build for production
-- `pnpm preview` - Preview production build
-
-## Design Guidelines
-
-See [guidelines/Guidelines.md](./guidelines/Guidelines.md) for UI/UX guidelines and design system references.
-
-## License
-
-This project is private and proprietary.
+## 🎨 UI/UX Guidelines
+See **[`guidelines/Guidelines.md`](file:///C:/Users/anish/OneDrive/College/Projects/Murder_Mystery_Web_Platform/guidelines/Guidelines.md)** for colors, typographies, typography-serif details, and theme variables used across the platform.

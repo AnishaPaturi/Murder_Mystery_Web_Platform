@@ -1,0 +1,79 @@
+================================================================================
+                    CASE DOSSIER: THE BYTES OF WRATH
+                     CRIME LOCATION: BYTECORP HQ
+================================================================================
+
+--- THE VICTIM ---
+Arthur Pendelton, Chief Systems Architect at ByteCorp. Arthur was found dead on 
+the morning of June 28, 2026, locked inside the primary mainframe server room.
+
+--- THE CRIME ---
+Arthur died of asphyxiation. The mainframe server room's environmental controls
+were compromised, locking the doors and disabling the ventilation system while 
+triggering a deliberate overheated CPU thermal fire. 
+
+--- THE MOTIVE & METHOD ---
+The lock-down was triggered by a malicious code injection (malicious script) 
+deployed into the production branch of ByteCorp's database servers. The killer 
+also wiped the primary logs, corrupting the layout of the crime scene terminal.
+
+--- THE SUSPECTS ---
+1. SARAH CHEN (CTO)
+   - Motive: Sarah had access to all production servers and Arthur's private keys.
+   - Threat Level: HIGH.
+   - Alibi: Claims she was in a virtual board meeting from 8:00 PM to 10:00 PM.
+   - Evidence: Security logs show her physical badge swiped into the server room
+     at 9:15 PM (the exact time of the thermal fire).
+
+2. MARCUS WEBB (Lead Developer)
+   - Motive: Pass over for promotion. Arthur recently recommended someone else 
+     for the Principal Architect role.
+   - Threat Level: MEDIUM.
+   - Alibi: Claims he was working late at his desk in the common developer pool.
+   - Evidence: Colleagues heard him arguing with Arthur about Git commit overrides
+     two days prior to the incident.
+
+3. ELENA RODRIGUEZ (Security Analyst)
+   - Motive: Deep knowledge of the server vulnerabilities. Has keys to backup systems.
+   - Threat Level: HIGH.
+   - Alibi: Working from home during the night.
+   - Evidence: VPN logs show suspicious activity from her IP address targeting the
+     environmental control API at 9:20 PM.
+
+4. JAMES PARKER (Product Manager)
+   - Motive: Financial disputes. Arthur was blocking his project budget allocations.
+   - Threat Level: LOW.
+   - Alibi: Dinner with high-profile clients until 11:00 PM.
+   - Evidence: Recent emails show heated exchanges regarding budget cuts.
+
+--- THE DETECTIVE'S MISSION (MERN STACK INSTRUCTION) ---
+To solve this mystery and convict the true killer, you must upgrade your development
+skills to piece together the corrupted records:
+
+1. PHASE 1: HTML & CSS (Reconstructing the Scene)
+   - Reconstruct Arthur's corrupted terminal layout. Rebuild the system reports and
+     the office desk locations using HTML, Flexbox, and Grid to verify lines of sight.
+
+2. PHASE 2: JAVASCRIPT (Decrypting Communications)
+   - Write algorithms to reverse ciphers, decrypt suspect chat logs, and loop
+     through millions of raw log entries to find anomalies.
+
+3. PHASE 3: REACT.JS (The Clue Board Dashboard)
+   - Build a reactive investigator board to track clue linkages and dynamically
+     filter suspects based on motive, threat level, and alibis.
+
+4. PHASE 4: NODE.JS & EXPRESS (Database API Access)
+   - Build secure Express APIs to request and update investigation notes, and 
+     secure them with middleware authentication to keep the killer from deleting them.
+
+5. PHASE 5: MONGODB (Exposing the Logs)
+   - Connect your backend to MongoDB. Seed the database with suspect records, and write
+     complex queries to search security swipe histories and find the fatal overlap.
+
+--- THE TWIST ---
+While Sarah Chen's badge was used to enter the room, the final analysis reveals
+the malicious script deployed to the database was signed with a private encryption
+key stolen from Sarah's locker. In the final phase, you will write a full-stack MERN query
+that exposes who checked out the physical badge bypass key from the developer logs—revealing 
+that Lead Developer Marcus Webb stole Sarah's badge and framed her!
+================================================================================
