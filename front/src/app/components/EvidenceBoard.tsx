@@ -54,6 +54,8 @@ export default function EvidenceBoard() {
   const [ragData, setRagData] = useState<RagData | null>(null);
   const [ragLoading, setRagLoading] = useState(false);
 
+  const selectedChallenge = challenges.find((c) => c.phaseId === selectedChallengeId);
+
   const fetchChallenges = async () => {
     if (!token) {
       setLoading(false);
