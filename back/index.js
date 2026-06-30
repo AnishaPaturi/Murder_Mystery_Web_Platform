@@ -8,6 +8,7 @@ import caseRoutes from "./routes/case.js";
 import challengeRoutes from "./routes/challenge.js";
 import suspectRoutes from "./routes/suspect.js";
 import learningRoutes from "./routes/learning.js";
+import ragRoutes from "./routes/rag.js";
 
 // Load environment variables
 dotenv.config();
@@ -41,6 +42,7 @@ app.use("/api/case", caseRoutes);
 app.use("/api/challenges", challengeRoutes);
 app.use("/api/suspects", suspectRoutes);
 app.use("/api/learning", learningRoutes);
+app.use("/api/rag", ragRoutes);
 
 // Basic health check route
 app.get("/", (req, res) => {

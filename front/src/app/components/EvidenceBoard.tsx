@@ -24,6 +24,18 @@ interface Clue {
   text: string;
 }
 
+interface RagChunk {
+  title: string;
+  content: string;
+  source: string;
+}
+
+interface RagData {
+  query: string;
+  synthesized: string;
+  chunks: RagChunk[];
+}
+
 export default function EvidenceBoard() {
   const { token, user, updateLocalUserStats } = useAuth();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -36,6 +48,11 @@ export default function EvidenceBoard() {
   const [newlyUnlockedClue, setNewlyUnlockedClue] = useState<Clue | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // RAG State Variables
+  const [activeModalTab, setActiveModalTab] = useState<"instructions" | "documentation">("documentation");
+  const [ragData, setRagData] = useState<RagData | null>(null);
+  const [ragLoading, setRagLoading] = useState(false);
 
   const fetchChallenges = async () => {
     if (!token) {
@@ -88,12 +105,47 @@ export default function EvidenceBoard() {
     loadData();
   }, [token]);
 
+  // Fetch RAG synthesized tutorial based on the challenge topic
+  const fetchRagData = async (phaseId: number) => {
+    let queryTopic = "";
+    switch (phaseId) {
+      case 1: queryTopic = "HTML elements tags h1 div strong"; break;
+      case 2: queryTopic = "JavaScript string manipulation split reverse join"; break;
+      case 3: queryTopic = "React components props JSX destructuring"; break;
+      case 4: queryTopic = "Express route routing handlers res.json"; break;
+      case 5: queryTopic = "Mongoose model query find sort"; break;
+      case 6: queryTopic = "JavaScript strict equality comparison"; break;
+      default: queryTopic = "HTML elements";
+    }
+
+    setRagLoading(true);
+    setRagData(null);
+
+    try {
+      const res = await fetch(`${API_URL}/rag?query=${encodeURIComponent(queryTopic)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setRagData(data);
+      }
+    } catch (err) {
+      console.error("Error retrieving RAG documentation:", err);
+    } finally {
+      setRagLoading(false);
+    }
+  };
+
   const handleChallengeClick = (challenge: Challenge) => {
     if (challenge.isUnlocked) {
       setSelectedChallengeId(challenge.phaseId);
       setCodeSolution(challenge.codeTemplate);
       setValidationError("");
       setValidationSuccess(false);
+      setActiveModalTab("documentation"); // default to documentation RAG view
+      fetchRagData(challenge.phaseId); // fetch live documentation chunks
     }
   };
 
@@ -154,38 +206,6 @@ export default function EvidenceBoard() {
       setIsSubmitting(false);
     }
   };
-
-  if (!token) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4">
-        <div className="max-w-md bg-[#16161d] border border-[#8b0000]/40 p-8 text-center rounded-lg shadow-2xl">
-          <div className="text-5xl mb-4">🚫</div>
-          <h2 className="text-2xl font-serif italic text-[#e8e6e3] mb-4">RESTRICTED EVIDENCE</h2>
-          <p className="text-[#9ca3af] font-mono text-sm mb-6">
-            You must be an active investigator to analyze crime scene evidence.
-          </p>
-          <div className="flex gap-4 justify-center">
-            <Link to="/login" className="px-5 py-2 bg-[#8b0000] text-[#e8e6e3] font-mono text-xs uppercase tracking-wider">
-              Decrypt Login
-            </Link>
-            <Link to="/signup" className="px-5 py-2 border border-[#8b0000] text-[#8b0000] font-mono text-xs uppercase tracking-wider">
-              Enlist
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <span className="animate-spin inline-block w-8 h-8 border-4 border-[#8b0000] border-t-transparent rounded-full"></span>
-      </div>
-    );
-  }
-
-  const selectedChallenge = challenges.find(c => c.phaseId === selectedChallengeId);
 
   // Helper icons
   const getIcon = (tier: string) => {
@@ -274,7 +294,7 @@ export default function EvidenceBoard() {
           </div>
         )}
 
-        {/* Dynamic Clues Section (keeps user invested as they solve tasks) */}
+        {/* Dynamic Clues Section */}
         <div className="bg-[#16161d] border-2 border-[#8b0000]/50 rounded p-6 md:p-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 bg-[#8b0000] text-[#e8e6e3] text-[9px] font-mono px-3 py-1 uppercase tracking-widest rounded-bl">
             CASE EVIDENCE OVERVIEW
@@ -361,17 +381,92 @@ export default function EvidenceBoard() {
                     <h3 className="text-2xl text-[#e8e6e3] font-serif italic">{selectedChallenge.title}</h3>
                   </div>
                 </div>
-                
-                {/* Curriculum Description & Instructions */}
-                <div className="bg-[#0a0a0f] border border-[#8b0000]/20 p-4 rounded mb-4 font-sans text-sm leading-relaxed text-[#9ca3af]">
-                  <p className="mb-2 text-[#e8e6e3] font-mono text-xs uppercase tracking-wider text-[#8b0000]">FORENSIC INSTRUCTIONS:</p>
-                  <p className="whitespace-pre-line">{selectedChallenge.instructions}</p>
-                </div>
 
-                {selectedChallenge.hint && (
-                  <div className="text-xs text-gray-500 font-mono mb-2 flex items-start gap-1">
-                    <span>💡 Hint:</span>
-                    <span>{selectedChallenge.hint}</span>
+                {/* Tab selectors for W3Schools concepts vs Assignment */}
+                <div className="flex border-b border-[#8b0000]/30 mb-4 font-mono text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setActiveModalTab("documentation")}
+                    className={`px-4 py-2 border-b-2 transition-all ${
+                      activeModalTab === "documentation"
+                        ? "border-[#8b0000] text-[#e8e6e3] bg-[#8b0000]/5 font-bold"
+                        : "border-transparent text-[#9ca3af] hover:text-[#e8e6e3]"
+                    }`}
+                  >
+                    📖 OFFICIAL DOCUMENTATION (RAG)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveModalTab("instructions")}
+                    className={`px-4 py-2 border-b-2 transition-all ${
+                      activeModalTab === "instructions"
+                        ? "border-[#8b0000] text-[#e8e6e3] bg-[#8b0000]/5 font-bold"
+                        : "border-transparent text-[#9ca3af] hover:text-[#e8e6e3]"
+                    }`}
+                  >
+                    🕵️‍♂️ MISSION OBJECTIVE
+                  </button>
+                </div>
+                
+                {/* Tab 1: Dynamic RAG Documentation Section */}
+                {activeModalTab === "documentation" && (
+                  <div className="bg-[#0a0a0f] border border-[#8b0000]/30 p-4 rounded mb-4 font-sans text-sm leading-relaxed max-h-[250px] overflow-y-auto custom-scrollbar">
+                    {ragLoading ? (
+                      <div className="py-8 text-center text-xs font-mono text-[#8b0000] animate-pulse">
+                        ⏳ RETRIEVING OFFICIAL DOCUMENTATION PASSAGES FROM MAINFRAME VECTOR SEARCH RAG...
+                      </div>
+                    ) : ragData ? (
+                      <div className="space-y-6">
+                        {/* Synthesized Tutor Explanation */}
+                        <div>
+                          <p className="text-[10px] text-[#8b0000] font-mono uppercase tracking-wider mb-2 font-bold">
+                            🤖 AI TUTOR SYNTHESIZED GUIDE (OFFICIAL GROUNDED SOURCE):
+                          </p>
+                          <p className="text-[#e8e6e3] text-sm whitespace-pre-line leading-relaxed">
+                            {ragData.synthesized}
+                          </p>
+                        </div>
+
+                        {/* Top Retrieved Document Passages (Step 8) */}
+                        <div className="border-t border-[#8b0000]/25 pt-4">
+                          <p className="text-[10px] text-gray-500 font-mono uppercase tracking-wider mb-3">
+                            📂 TOP RETRIEVED DOCUMENT PATHS (VERIFICATION SOURCES):
+                          </p>
+                          <div className="space-y-3">
+                            {ragData.chunks.map((chunk, idx) => (
+                              <div key={idx} className="bg-[#16161d] border border-gray-800 p-3 rounded font-mono text-xs">
+                                <div className="flex justify-between text-gray-500 text-[10px] mb-1 pb-1 border-b border-gray-800/60">
+                                  <span className="font-bold text-gray-400">📄 {chunk.title}</span>
+                                  <span className="text-[#8b0000]">{chunk.source}</span>
+                                </div>
+                                <p className="text-[#9ca3af] whitespace-pre-line text-[11px] leading-relaxed">
+                                  {chunk.content}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-xs font-mono text-gray-500">
+                        NO RETRIEVED TEXTS LOADED.
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Tab 2: Code instructions and assignment */}
+                {activeModalTab === "instructions" && (
+                  <div className="bg-[#0a0a0f] border border-[#8b0000]/20 p-4 rounded mb-4 font-sans text-sm leading-relaxed text-[#9ca3af]">
+                    <p className="mb-2 text-[#e8e6e3] font-mono text-xs uppercase tracking-wider text-[#8b0000]">FORENSIC INSTRUCTIONS & ASSIGNMENT:</p>
+                    <p className="whitespace-pre-line font-mono text-xs leading-relaxed">{selectedChallenge.instructions}</p>
+                    
+                    {selectedChallenge.hint && (
+                      <div className="text-xs text-gray-500 font-mono mt-4 pt-3 border-t border-[#8b0000]/20 flex items-start gap-1">
+                        <span>💡 Hint:</span>
+                        <span>{selectedChallenge.hint}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
