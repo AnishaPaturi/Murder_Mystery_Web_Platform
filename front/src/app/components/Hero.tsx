@@ -145,12 +145,17 @@ export default function Hero() {
               "The suspect used a substitution cipher, Express router overrides, and Mongoose database injections to hide their traces."
             </div>
           </div>
-          <div className="relative aspect-video bg-[#0a0a0f] border border-[#8b0000]/40 flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,transparent,transparent_15px,rgba(139,0,0,0.05)_15px,rgba(139,0,0,0.05)_30px)]"></div>
-            <div className="text-center font-mono space-y-3 z-10 p-6">
-              <span className="text-5xl block animate-pulse">💀</span>
-              <p className="text-xs text-[#8b0000] font-bold uppercase tracking-widest">VICTIM FILE: SECURE</p>
-              <p className="text-[10px] text-gray-500">June 28, 2026 | Asphyxiation (Environmental Override)</p>
+          <div className="relative aspect-video bg-black border border-[#8b0000]/50 rounded overflow-hidden shadow-lg shadow-[#8b0000]/10 group">
+            <video
+              src="/The_Silent_Truth.mp4"
+              controls
+              muted
+              loop
+              autoPlay
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+            />
+            <div className="absolute top-3 left-3 bg-[#8b0000] text-[#e8e6e3] text-[9px] font-mono px-2 py-0.5 rounded tracking-widest uppercase pointer-events-none select-none animate-pulse">
+              🔴 REC - MAIN FRAME CAMERA
             </div>
           </div>
         </div>
