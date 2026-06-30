@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth, API_URL } from "../context/AuthContext";
 
 interface HistoryItem {
@@ -22,6 +22,10 @@ export default function Profile() {
   const [heatmap, setHeatmap] = useState<Record<string, number>>({});
   const [activeTab, setActiveTab] = useState<"history" | "badges">("history");
   const [profileLoading, setProfileLoading] = useState(true);
+  
+  // Pagination State for History Logs
+  const [currentPage, setCurrentPage] = useState(1);
+  const logsPerPage = 5;
 
   // Redirect if not logged in
   useEffect(() => {
@@ -76,13 +80,24 @@ export default function Profile() {
     );
   }
 
+  // Calculate XP Level Curve (Milestone Polish)
+  // Each Level is 100 XP. Current level is totalXP/100 + 1. Progress is remainder.
+  const totalXP = history.reduce((sum, item) => sum + item.xp, 0);
+  const currentLevel = Math.floor(totalXP / 100) + 1;
+  const xpProgress = totalXP % 100;
+
+  // Pagination Math
+  const indexOfLastLog = currentPage * logsPerPage;
+  const indexOfFirstLog = indexOfLastLog - logsPerPage;
+  const currentLogs = history.slice(indexOfFirstLog, indexOfLastLog);
+  const totalPages = Math.max(Math.ceil(history.length / logsPerPage), 1);
+
   // Generate 365 days for LeetCode-style activity map
   const getHeatmapGrid = () => {
     const grid = [];
     const today = new Date();
     
     // Find how many days to show to make it align to a neat grid (e.g. 53 weeks = 371 days)
-    // Starting 370 days ago so we end up with columns of 7
     const daysToShow = 371; 
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - daysToShow + 1);
@@ -120,12 +135,6 @@ export default function Profile() {
     return "bg-[#e81b1b] border-red-500 shadow-[0_0_8px_rgba(232,27,27,0.6)] animate-pulse";
   };
 
-  const getDayLetter = (row: number) => {
-    const days = ["S", "M", "T", "W", "T", "F", "S"];
-    return days[row];
-  };
-
-  // Group cells into 7 rows representing days of the week (0 = Sunday, 1 = Monday, etc.)
   const rows = Array.from({ length: 7 }, (_, rowIndex) => {
     return heatmapGrid.filter((_, idx) => idx % 7 === rowIndex);
   });
@@ -147,8 +156,6 @@ export default function Profile() {
     }
   };
 
-  const totalXP = history.reduce((sum, item) => sum + item.xp, 0);
-
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#e8e6e3] pt-24 pb-16 px-4 md:px-6 relative overflow-hidden">
       {/* Background noir gradients */}
@@ -164,15 +171,32 @@ export default function Profile() {
             <div className="w-24 h-24 bg-[#0a0a0f] border-2 border-[#8b0000] mx-auto rounded-full flex items-center justify-center text-4xl mb-4 relative group">
               🔍
               <div className="absolute -bottom-1 -right-1 bg-[#8b0000] text-xs font-mono px-2 py-0.5 rounded text-[#e8e6e3] border border-[#16161d]">
-                LVL {Math.floor(user.completedChallenges / 10) + 1}
+                LVL {currentLevel}
               </div>
             </div>
             <h2 className="text-2xl font-serif italic mb-1">{user.username}</h2>
-            <p className="text-xs text-[#8b0000] font-mono tracking-widest uppercase mb-4">
+            <p className="text-xs text-[#8b0000] font-mono tracking-widest uppercase mb-4 text-ellipsis overflow-hidden">
               {user.rank}
             </p>
             <div className="inline-block px-3 py-1 bg-red-950/20 border border-[#8b0000]/30 text-[#e8e6e3] text-xs font-mono rounded">
               Phase: {user.currentPhase}
+            </div>
+
+            {/* Level Progress Bar (Milestone Polish) */}
+            <div className="mt-6 border-t border-[#8b0000]/20 pt-4 text-left">
+              <div className="flex justify-between text-[10px] text-[#9ca3af] font-mono mb-1">
+                <span>XP PROGRESS:</span>
+                <span>{xpProgress}/100 XP</span>
+              </div>
+              <div className="w-full h-2 bg-[#0a0a0f] border border-[#8b0000]/30 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#8b0000] to-[#b91c1c] transition-all duration-500" 
+                  style={{ width: `${xpProgress}%` }}
+                ></div>
+              </div>
+              <span className="text-[9px] text-gray-500 font-mono mt-1.5 block">
+                {100 - xpProgress} XP to Level {currentLevel + 1}
+              </span>
             </div>
           </div>
 
@@ -182,7 +206,7 @@ export default function Profile() {
               <span className="text-right break-all max-w-[150px]">{user.email}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#9ca3af]">XP ACCUMULATED:</span>
+              <span className="text-[#9ca3af]">XP LOGGED:</span>
               <span className="text-[#8b0000] font-bold">{totalXP} XP</span>
             </div>
             <div className="flex justify-between">
@@ -302,10 +326,10 @@ export default function Profile() {
           </div>
 
           {/* Activity / Badges Detail Tabs */}
-          <div className="bg-[#16161d] border border-[#8b0000]/40 rounded-lg overflow-hidden">
+          <div className="bg-[#16161d] border border-[#8b0000]/40 rounded-lg overflow-hidden font-sans">
             <div className="flex border-b border-[#8b0000]/20 font-mono text-sm">
               <button
-                onClick={() => setActiveTab("history")}
+                onClick={() => { setActiveTab("history"); setCurrentPage(1); }}
                 className={`flex-1 py-4 text-center border-b-2 transition-all duration-300 ${
                   activeTab === "history"
                     ? "border-[#8b0000] text-[#e8e6e3] bg-[#8b0000]/5"
@@ -315,7 +339,7 @@ export default function Profile() {
                 📜 INVESTIGATION LOGS
               </button>
               <button
-                onClick={() => setActiveTab("badges")}
+                onClick={() => { setActiveTab("badges"); }}
                 className={`flex-1 py-4 text-center border-b-2 transition-all duration-300 ${
                   activeTab === "badges"
                     ? "border-[#8b0000] text-[#e8e6e3] bg-[#8b0000]/5"
@@ -337,39 +361,63 @@ export default function Profile() {
                     NO DOSSIER ENTRIES REPORTED YET.
                   </div>
                 ) : (
-                  <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                    {history.map((item) => (
-                      <div
-                        key={item._id}
-                        className="bg-[#0a0a0f] border border-[#8b0000]/20 p-4 rounded flex items-center justify-between transition-all hover:border-[#8b0000]/50"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">
-                            {item.type === "case_solved" && "🔍"}
-                            {item.type === "evidence_found" && "📌"}
-                            {item.type === "badge_earned" && "🏆"}
-                            {item.type === "suspect_interviewed" && "🗣️"}
-                            {item.type === "notes_updated" && "📝"}
-                          </span>
-                          <div>
-                            <p className="text-sm font-medium">{item.description}</p>
-                            <span className="text-[10px] text-[#9ca3af] font-mono uppercase block mt-1">
-                              {new Date(item.date).toLocaleDateString(undefined, {
-                                month: "short",
-                                day: "numeric",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
+                  <div className="space-y-4">
+                    {/* Paginated History Feed */}
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {currentLogs.map((item) => (
+                        <div
+                          key={item._id}
+                          className="bg-[#0a0a0f] border border-[#8b0000]/20 p-4 rounded flex items-center justify-between transition-all hover:border-[#8b0000]/50"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">
+                              {item.type === "case_solved" && "🔍"}
+                              {item.type === "evidence_found" && "📌"}
+                              {item.type === "badge_earned" && "🏆"}
+                              {item.type === "suspect_interviewed" && "🗣️"}
+                              {item.type === "notes_updated" && "📝"}
+                            </span>
+                            <div>
+                              <p className="text-sm font-medium">{item.description}</p>
+                              <span className="text-[10px] text-[#9ca3af] font-mono uppercase block mt-1">
+                                {new Date(item.date).toLocaleDateString(undefined, {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs bg-red-950/40 border border-[#8b0000]/30 text-[#e8e6e3] font-mono px-2.5 py-1 rounded">
+                              +{item.xp} XP
                             </span>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <span className="text-xs bg-red-950/40 border border-[#8b0000]/30 text-[#e8e6e3] font-mono px-2.5 py-1 rounded">
-                            +{item.xp} XP
-                          </span>
-                        </div>
+                      ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between pt-4 border-t border-[#8b0000]/10 text-xs font-mono text-[#9ca3af] mt-4">
+                        <button
+                          onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1.5 border border-[#8b0000]/50 text-[#8b0000] hover:bg-[#8b0000]/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all uppercase tracking-wider rounded"
+                        >
+                          ← Previous
+                        </button>
+                        <span>PAGE {currentPage} OF {totalPages}</span>
+                        <button
+                          onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1.5 border border-[#8b0000]/50 text-[#8b0000] hover:bg-[#8b0000]/10 disabled:opacity-30 disabled:hover:bg-transparent transition-all uppercase tracking-wider rounded"
+                        >
+                          Next →
+                        </button>
                       </div>
-                    ))}
+                    )}
                   </div>
                 )
               ) : (

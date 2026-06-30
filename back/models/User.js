@@ -29,15 +29,27 @@ const UserSchema = new mongoose.Schema(
     },
     completedChallenges: {
       type: Number,
-      default: 5,
+      default: 0,
     },
     totalChallenges: {
       type: Number,
-      default: 95,
+      default: 6, // We have 6 main challenges corresponding to the story phases
     },
     badges: {
       type: [String],
-      default: ["First Case", "Code Breaker", "Evidence Collector"],
+      default: [],
+    },
+    unlockedPhases: {
+      type: [Number],
+      default: [1], // Phase 1 is unlocked by default
+    },
+    mfaCode: {
+      type: String,
+      default: null,
+    },
+    mfaExpires: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }

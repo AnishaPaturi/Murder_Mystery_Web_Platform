@@ -4,6 +4,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
+import caseRoutes from "./routes/case.js";
+import challengeRoutes from "./routes/challenge.js";
+import suspectRoutes from "./routes/suspect.js";
+import learningRoutes from "./routes/learning.js";
 
 // Load environment variables
 dotenv.config();
@@ -33,6 +37,10 @@ mongoose
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/case", caseRoutes);
+app.use("/api/challenges", challengeRoutes);
+app.use("/api/suspects", suspectRoutes);
+app.use("/api/learning", learningRoutes);
 
 // Basic health check route
 app.get("/", (req, res) => {

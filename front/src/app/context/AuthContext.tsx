@@ -15,11 +15,13 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; mfaRequired?: boolean; email?: string; error?: string }>;
+  verifyMfa: (email: string, code: string) => Promise<{ success: boolean; error?: string }>;
   signup: (username: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   updateLocalUserStats: (updatedFields: Partial<User>) => void;
   fetchUserProfile: () => Promise<void>;
+  devLogin: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,6 +90,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: data.message || "Login failed" };
       }
 
+      if (data.mfaRequired) {
+        return { success: true, mfaRequired: true, email: data.email };
+      }
+
+      localStorage.setItem("detective_token", data.token);
+      setToken(data.token);
+      setUser(data.user);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: "Cannot connect to server. Is the backend running?" };
+    }
+  };
+
+  const verifyMfa = async (email: string, code: string) => {
+    try {
+      const res = await fetch(`${API_URL}/auth/verify-mfa`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, code }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.message || "MFA verification failed" };
+      }
+
       localStorage.setItem("detective_token", data.token);
       setToken(data.token);
       setUser(data.user);
@@ -121,6 +151,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const devLogin = async () => {
+    try {
+      const res = await fetch(`${API_URL}/auth/dev-login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.message || "Dev login failed" };
+      }
+
+      localStorage.setItem("detective_token", data.token);
+      setToken(data.token);
+      setUser(data.user);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: "Cannot connect to server. Is the backend running?" };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("detective_token");
     setToken(null);
@@ -140,10 +193,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         loading,
         login,
+        verifyMfa,
         signup,
         logout,
         updateLocalUserStats,
         fetchUserProfile,
+        devLogin,
       }}
     >
       {children}

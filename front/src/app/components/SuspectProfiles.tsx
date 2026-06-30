@@ -1,63 +1,64 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth, API_URL } from "../context/AuthContext";
 
+interface Suspect {
+  id: number;
+  suspectId: number;
+  name: string;
+  role: string;
+  threat: "LOW" | "MEDIUM" | "HIGH";
+  motive: string;
+  emoji: string;
+  alibi: string;
+  evidence: string;
+  background: string;
+  unlockedAtPhase: number;
+  isUnlocked: boolean;
+}
+
 export default function SuspectProfiles() {
-  const { token, updateLocalUserStats } = useAuth();
+  const { token } = useAuth();
+  const [suspects, setSuspects] = useState<Suspect[]>([]);
   const [selectedSuspect, setSelectedSuspect] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const suspects = [
-    {
-      id: 1,
-      name: "SARAH CHEN",
-      role: "CTO",
-      threat: "HIGH",
-      motive: "Access to all systems",
-      emoji: "👩‍💼",
-      alibi: "Claims to have been in a virtual meeting from 8-10 PM",
-      evidence: "Security logs show her badge accessed server room at 9:15 PM",
-      background: "Brilliant technologist with 15 years in the industry. Known for her strict management style."
-    },
-    {
-      id: 2,
-      name: "MARCUS WEBB",
-      role: "Lead Developer",
-      threat: "MEDIUM",
-      motive: "Recent conflict with victim",
-      emoji: "👨‍💻",
-      alibi: "Says he was working late at his desk",
-      evidence: "Colleagues heard him arguing with victim two days before the incident",
-      background: "Talented coder who recently got passed over for promotion to the victim."
-    },
-    {
-      id: 3,
-      name: "ELENA RODRIGUEZ",
-      role: "Security Analyst",
-      threat: "HIGH",
-      motive: "Knowledge of vulnerabilities",
-      emoji: "👩‍🔬",
-      alibi: "Working from home during the time of death",
-      evidence: "VPN logs show suspicious activity from her account",
-      background: "Former cybersecurity consultant. Has deep knowledge of all company systems."
-    },
-    {
-      id: 4,
-      name: "JAMES PARKER",
-      role: "Product Manager",
-      threat: "LOW",
-      motive: "Financial disputes",
-      emoji: "👨‍💼",
-      alibi: "At dinner with clients until 11 PM",
-      evidence: "Recent emails show heated discussions about budget allocation",
-      background: "MBA from prestigious university. Recently went through expensive divorce."
+  const fetchSuspects = async () => {
+    if (!token) {
+      setLoading(false);
+      return;
     }
-  ];
 
-  const handleInterrogateClick = async (suspect: typeof suspects[0]) => {
+    try {
+      const res = await fetch(`${API_URL}/suspects`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuspects(data);
+      } else {
+        setError(data.message || "Failed to load suspects.");
+      }
+    } catch (err) {
+      setError("Error connecting to server. Is the backend running?");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSuspects();
+  }, [token]);
+
+  const handleInterrogateClick = async (suspect: Suspect) => {
     setSelectedSuspect(suspect.id);
 
-    if (token) {
+    if (token && suspect.isUnlocked) {
       try {
-        const res = await fetch(`${API_URL}/user/activity`, {
+        await fetch(`${API_URL}/user/activity`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -69,20 +70,16 @@ export default function SuspectProfiles() {
             xp: 20,
           }),
         });
-        const data = await res.json();
-        if (res.ok && data.user) {
-          updateLocalUserStats(data.user);
-        }
       } catch (err) {
         console.error("Error logging suspect interrogation:", err);
       }
     }
   };
 
-  const handleQuestionFurther = async (suspect: typeof suspects[0]) => {
-    if (token) {
+  const handleQuestionFurther = async (suspect: Suspect) => {
+    if (token && suspect.isUnlocked) {
       try {
-        const res = await fetch(`${API_URL}/user/activity`, {
+        await fetch(`${API_URL}/user/activity`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -94,20 +91,46 @@ export default function SuspectProfiles() {
             xp: 15,
           }),
         });
-        const data = await res.json();
-        if (res.ok && data.user) {
-          updateLocalUserStats(data.user);
-        }
       } catch (err) {
         console.error("Error logging further questioning:", err);
       }
     }
   };
 
+  if (!token) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center px-4">
+        <div className="max-w-md bg-[#16161d] border border-[#8b0000]/40 p-8 text-center rounded-lg shadow-2xl">
+          <div className="text-5xl mb-4">🚫</div>
+          <h2 className="text-2xl font-serif italic text-[#e8e6e3] mb-4">CLASSIFIED DOSSIER</h2>
+          <p className="text-[#9ca3af] font-mono text-sm mb-6">
+            You must be an active detective to interrogate the suspects of the mainframe security lock-down.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Link to="/login" className="px-5 py-2 bg-[#8b0000] text-[#e8e6e3] font-mono text-xs uppercase tracking-wider">
+              Decrypt Login
+            </Link>
+            <Link to="/signup" className="px-5 py-2 border border-[#8b0000] text-[#8b0000] font-mono text-xs uppercase tracking-wider">
+              Enlist
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+        <span className="animate-spin inline-block w-8 h-8 border-4 border-[#8b0000] border-t-transparent rounded-full"></span>
+      </div>
+    );
+  }
+
   const selectedProfile = suspects.find(s => s.id === selectedSuspect);
 
   return (
-    <section id="suspects" className="py-20 px-6 bg-[#16161d] relative overflow-hidden">
+    <section id="suspects" className="py-20 px-6 bg-[#16161d] relative overflow-hidden min-h-screen">
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Title */}
         <div className="text-center mb-16">
@@ -124,63 +147,69 @@ export default function SuspectProfiles() {
           </p>
         </div>
 
-        {/* Suspects Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {suspects.map((suspect) => (
-            <div
-              key={suspect.id}
-              className="bg-[#0a0a0f] border-2 border-[#8b0000]/50 p-6 hover:border-[#8b0000] transition-all duration-300 group relative"
-            >
-              {/* Threat Level Badge */}
-              <div className={`absolute top-4 right-4 px-3 py-1 text-xs font-mono ${
-                suspect.threat === "HIGH" ? "bg-[#8b0000] text-[#e8e6e3]" :
-                suspect.threat === "MEDIUM" ? "bg-[#b45f00] text-[#e8e6e3]" :
-                "bg-[#4a5568] text-[#e8e6e3]"
-              }`}>
-                {suspect.threat}
-              </div>
-
-              {/* Photo Placeholder */}
-              <div className="w-full aspect-square bg-[#1a1a24] mb-4 flex items-center justify-center border border-[#8b0000]/30 relative overflow-hidden">
-                <div className="text-6xl filter grayscale group-hover:grayscale-0 transition-all duration-300">
-                  {suspect.emoji}
-                </div>
-                {/* Redacted Effect */}
-                <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_10px,#8b0000_10px,#8b0000_12px)] opacity-20"></div>
-              </div>
-
-              {/* Name */}
-              <h3 className="text-lg text-[#e8e6e3] mb-1 font-mono tracking-wider">
-                {suspect.name}
-              </h3>
-
-              {/* Role */}
-              <p className="text-[#9ca3af] mb-3 text-sm">{suspect.role}</p>
-
-              {/* Divider */}
-              <div className="w-full h-px bg-[#8b0000]/30 mb-3"></div>
-
-              {/* Motive */}
-              <div className="text-xs">
-                <p className="text-[#8b0000] mb-1 font-mono">MOTIVE:</p>
-                <p className="text-[#9ca3af]">{suspect.motive}</p>
-              </div>
-
-              {/* Interrogate Button */}
-              <button
-                onClick={() => handleInterrogateClick(suspect)}
-                className="w-full mt-4 py-2 border border-[#8b0000] text-[#8b0000] hover:bg-[#8b0000] hover:text-[#e8e6e3] transition-all duration-300 text-sm font-mono uppercase tracking-wider"
+        {error ? (
+          <div className="text-center text-[#8b0000] font-mono py-12">{error}</div>
+        ) : (
+          /* Suspects Grid */
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {suspects.map((suspect) => (
+              <div
+                key={suspect.id}
+                className={`bg-[#0a0a0f] border-2 ${
+                  suspect.isUnlocked ? "border-[#8b0000]/50 hover:border-[#8b0000]" : "border-gray-800/40 opacity-60"
+                } p-6 transition-all duration-300 group relative rounded`}
               >
-                Interrogate
-              </button>
-            </div>
-          ))}
-        </div>
+                {/* Threat Level Badge */}
+                <div className={`absolute top-4 right-4 px-3 py-1 text-xs font-mono ${
+                  suspect.threat === "HIGH" ? "bg-[#8b0000] text-[#e8e6e3]" :
+                  suspect.threat === "MEDIUM" ? "bg-[#b45f00] text-[#e8e6e3]" :
+                  "bg-[#4a5568] text-[#e8e6e3]"
+                }`}>
+                  {suspect.threat}
+                </div>
+
+                {/* Photo Placeholder */}
+                <div className="w-full aspect-square bg-[#1a1a24] mb-4 flex items-center justify-center border border-[#8b0000]/30 relative overflow-hidden">
+                  <div className={`text-6xl ${suspect.isUnlocked ? "filter-none" : "filter grayscale opacity-40"} transition-all duration-300`}>
+                    {suspect.emoji}
+                  </div>
+                  {/* Redacted Effect */}
+                  <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_10px,#8b0000_10px,#8b0000_12px)] opacity-20"></div>
+                </div>
+
+                {/* Name */}
+                <h3 className="text-lg text-[#e8e6e3] mb-1 font-mono tracking-wider">
+                  {suspect.name}
+                </h3>
+
+                {/* Role */}
+                <p className="text-[#9ca3af] mb-3 text-sm">{suspect.role}</p>
+
+                {/* Divider */}
+                <div className="w-full h-px bg-[#8b0000]/30 mb-3"></div>
+
+                {/* Motive */}
+                <div className="text-xs min-h-[3rem]">
+                  <p className="text-[#8b0000] mb-1 font-mono">MOTIVE:</p>
+                  <p className="text-[#9ca3af] break-words">{suspect.motive}</p>
+                </div>
+
+                {/* Interrogate Button */}
+                <button
+                  onClick={() => handleInterrogateClick(suspect)}
+                  className="w-full mt-4 py-2 border border-[#8b0000] text-[#8b0000] hover:bg-[#8b0000] hover:text-[#e8e6e3] transition-all duration-300 text-sm font-mono uppercase tracking-wider"
+                >
+                  {suspect.isUnlocked ? "Interrogate" : "Locked (Phase Clue)"}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Interrogation Modal */}
         {selectedProfile && (
-          <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-6">
-            <div className="bg-[#0a0a0f] border-2 border-[#8b0000] max-w-4xl w-full p-8 relative max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-6 backdrop-blur-sm">
+            <div className="bg-[#0a0a0f] border-2 border-[#8b0000] max-w-4xl w-full p-8 relative max-h-[90vh] overflow-y-auto rounded-lg">
               <button
                 onClick={() => setSelectedSuspect(null)}
                 className="absolute top-4 right-4 text-[#9ca3af] hover:text-[#e8e6e3] text-2xl"
@@ -216,7 +245,7 @@ export default function SuspectProfiles() {
                     <span className="text-xl">🎯</span>
                     <h4 className="text-[#8b0000] font-mono">MOTIVE</h4>
                   </div>
-                  <p className="text-[#e8e6e3]">{selectedProfile.motive}</p>
+                  <p className="text-[#e8e6e3] font-mono">{selectedProfile.motive}</p>
                 </div>
 
                 <div className="bg-[#16161d] border border-[#8b0000]/30 p-6">
@@ -224,7 +253,7 @@ export default function SuspectProfiles() {
                     <span className="text-xl">📍</span>
                     <h4 className="text-[#8b0000] font-mono">ALIBI</h4>
                   </div>
-                  <p className="text-[#e8e6e3]">{selectedProfile.alibi}</p>
+                  <p className="text-[#e8e6e3] font-mono">{selectedProfile.alibi}</p>
                 </div>
 
                 <div className="bg-[#16161d] border border-[#8b0000]/30 p-6 md:col-span-2">
@@ -232,7 +261,7 @@ export default function SuspectProfiles() {
                     <span className="text-xl">🔍</span>
                     <h4 className="text-[#8b0000] font-mono">KEY EVIDENCE</h4>
                   </div>
-                  <p className="text-[#e8e6e3]">{selectedProfile.evidence}</p>
+                  <p className="text-[#e8e6e3] font-mono">{selectedProfile.evidence}</p>
                 </div>
               </div>
 
@@ -240,15 +269,16 @@ export default function SuspectProfiles() {
               <div className="flex gap-4">
                 <button 
                   onClick={() => handleQuestionFurther(selectedProfile)}
-                  className="flex-1 py-3 bg-[#8b0000] text-[#e8e6e3] hover:bg-[#a00000] transition-all duration-300 uppercase tracking-wider"
+                  disabled={!selectedProfile.isUnlocked}
+                  className="flex-1 py-3 bg-[#8b0000] text-[#e8e6e3] hover:bg-[#a00000] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 uppercase tracking-wider font-mono text-xs"
                 >
                   Question Further
                 </button>
                 <button 
                   onClick={() => setSelectedSuspect(null)}
-                  className="flex-1 py-3 border-2 border-[#8b0000] text-[#8b0000] hover:bg-[#8b0000] hover:text-[#e8e6e3] transition-all duration-300 uppercase tracking-wider"
+                  className="flex-1 py-3 border-2 border-[#8b0000] text-[#8b0000] hover:bg-[#8b0000] hover:text-[#e8e6e3] transition-all duration-300 uppercase tracking-wider font-mono text-xs"
                 >
-                  Review Evidence
+                  Dismiss
                 </button>
               </div>
             </div>
