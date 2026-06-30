@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import History from "../models/History.js";
 import auth from "../middleware/auth.js";
+import { sendMfaEmail } from "../utils/sendEmail.js";
 
 const router = express.Router();
 
@@ -138,16 +139,13 @@ router.post("/login", async (req, res) => {
     user.mfaExpires = new Date(Date.now() + 5 * 60 * 1000); // Expires in 5 minutes
     await user.save();
 
-    // Print OTP to backend console logs (Simulated SMS/Email delivery)
-    console.log(`\n============================================================`);
-    console.log(`[MFA WARNING] 6-digit verification code for ${user.email} is:`);
-    console.log(`🚨 >>>  ${otp}  <<< 🚨`);
-    console.log(`============================================================\n`);
+    // Send OTP to user's registered email
+    await sendMfaEmail(user.email, otp);
 
     res.json({
       mfaRequired: true,
       email: user.email,
-      message: "Multi-factor authentication required. Decryption passcode logged in server console.",
+      message: "Multi-factor authentication required. Decryption passcode dispatched to registered email.",
     });
   } catch (err) {
     console.error(err);
